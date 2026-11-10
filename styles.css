@@ -110,3 +110,66 @@ main{width:min(100%,1100px);padding:12px 20px}header{margin-bottom:8px}header sm
   .synthesis-panel h3,.synthesis-flow>span{color:#111}
   .synthesis-discussion button{display:none}
 }
+
+/* Phone layouts. Keep controls in the document flow so browser chrome cannot cover a fixed bar. */
+@media screen and (max-width:600px), screen and (hover:none) and (pointer:coarse) and (max-width:1000px){
+  main{
+    padding:8px max(9px,env(safe-area-inset-right,0px))
+      max(12px,env(safe-area-inset-bottom,0px)) max(9px,env(safe-area-inset-left,0px));
+    padding-top:max(8px,env(safe-area-inset-top,0px));
+  }
+  main>header{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;margin-bottom:8px}
+  main>header h1{font-size:clamp(1.35rem,5.5vw,1.9rem)}
+  main>header nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  main>header nav button{min-width:0;min-height:44px;padding:5px 3px;font-size:.82rem;overflow-wrap:anywhere}
+  .hud{grid-template-columns:minmax(0,1fr) auto;gap:3px 6px;padding:7px 8px;font-size:.83rem}
+  #phase{display:none}
+  #objective{font-size:.96rem;line-height:1.4;overflow-wrap:anywhere}
+  #slots{font-size:.75rem}
+  .world{min-width:0}
+  .status{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin:7px 0;font-size:.9rem;line-height:1.4}
+  .status button,.touch button,#answers button,.synthesis-discussion button{min-height:48px}
+  .status button{padding:7px 12px;font-size:.9rem}
+  .touch{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .touch button{min-width:0;font-size:1.4rem;padding:2px 4px;user-select:none;-webkit-user-select:none;touch-action:none}
+  .touch button:active{background:#38686a}
+  footer{margin-top:7px;font-size:.8rem;line-height:1.35}
+  #box[open]{
+    box-sizing:border-box;min-width:0;max-width:none;
+    width:calc(100vw - max(10px,env(safe-area-inset-left,0px)) - max(10px,env(safe-area-inset-right,0px)));
+    max-height:calc(100vh - 20px);
+    max-height:calc(100dvh - max(10px,env(safe-area-inset-top,0px)) - max(10px,env(safe-area-inset-bottom,0px)));
+    inset-inline-start:max(10px,env(safe-area-inset-left,0px));
+    inset-inline-end:max(10px,env(safe-area-inset-right,0px));
+    inset-block-start:max(10px,env(safe-area-inset-top,0px));
+    inset-block-end:max(10px,env(safe-area-inset-bottom,0px));
+    margin:auto;padding:12px;overflow:auto;overscroll-behavior:contain;overflow-wrap:anywhere;
+  }
+  #box h2{font-size:1.25rem}
+  #box #message{font-size:.97rem;line-height:1.5}
+  #answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  #answers button,.synthesis-discussion button{min-width:0;white-space:normal;overflow-wrap:anywhere}
+  #box.result #message,#box.summary .synthesis-resources,#box.summary .synthesis-steps{grid-template-columns:minmax(0,1fr)}
+  #box.summary .synthesis-flow{grid-template-columns:minmax(0,1fr)}
+  #box.summary .synthesis-flow>span{transform:rotate(90deg);justify-self:center}
+  #box.summary .synthesis-discussion{grid-template-columns:minmax(0,1fr)}
+  #box.summary .synthesis-discussion button{justify-self:start}
+  #summary-tools textarea{max-width:100%;box-sizing:border-box}
+}
+@media screen and (orientation:landscape) and (max-height:550px) and (min-width:590px) and (max-width:600px),
+       screen and (orientation:landscape) and (max-height:550px) and (min-width:590px) and (max-width:1000px) and (hover:none) and (pointer:coarse){
+  main{display:grid;grid-template-columns:minmax(0,1fr) minmax(190px,31%);column-gap:10px;row-gap:5px;align-items:start}
+  main>.world{grid-column:1;grid-row:1/5;align-self:start}
+  main>header,main>.hud,main>.status,main>.touch{grid-column:2;margin:0}
+  main>header{grid-row:1}
+  main>.hud{grid-row:2}
+  main>.status{grid-row:3}
+  main>.touch{grid-row:4}
+  main>footer{grid-column:1/-1;grid-row:5;margin:0}
+  main>header h1{font-size:1.3rem}
+  main>header nav button{font-size:.74rem}
+  .hud{grid-template-columns:minmax(0,1fr)}
+  #slots{justify-self:start}
+  #objective{grid-row:auto}
+  .status{font-size:.8rem}
+}

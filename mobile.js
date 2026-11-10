@@ -1,0 +1,21 @@
+window.MOBILE_COPY={
+  "mobile.journal":["Journal","日誌"],
+  "mobile.interact":["Interact","互動"],
+  "mobile.controls":["Hold an arrow to walk. Tap a marked person or object to approach it.","按住方向鍵移動。點按有標記的人物或物件即可走近。"],
+  "mobile.hint":["Tap a marked person or object, or follow the current objective.","點按有標記的人物或物件，或跟隨目前任務。"],
+  "mobile.nearby":["Nearby · ","附近・"],
+  "mobile.tutorial.move":["Hold one of the on-screen arrows to walk.","按住畫面上的方向鍵移動。"],
+  "mobile.tutorial.phone":["Tap the phone, or walk up to it and tap Interact.","點按手機，或走近後點按「互動」。"],
+  "mobile.tutorial.journal":["Tap Journal to see your next objective.","點按「日誌」查看下一個目標。"],
+  "mobile.arrowleft":["Move left","向左移動"],
+  "mobile.arrowup":["Move up","向上移動"],
+  "mobile.arrowdown":["Move down","向下移動"],
+  "mobile.arrowright":["Move right","向右移動"],
+  "mobile.map.academic":["Dr Chan","陳老師"],
+  "mobile.map.advisor":["Yan","Yan"],
+  "mobile.map.mentor":["Jo","Jo"],
+  "mobile.map.recruiter":["Leung","梁小姐"],
+  "mobile.map.evidence":["Dissertation","論文資料"],
+  "mobile.map.cafe":["Recruitment Café","招聘咖啡室"],
+  "mobile.map.desk":["CV desk","履歷工作站"]
+};

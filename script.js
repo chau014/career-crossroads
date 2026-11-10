@@ -18,7 +18,7 @@
   for(const [id,value] of Object.entries(npc))pair(value,zh.npc[id]);
   for(const [id,value] of Object.entries(quests))pair(Object.values(value),zh.quests[id]);
   for(const [id,value] of Object.entries(actions))pair(value,zh.actions[id]);
-  function t(text){if(window.RESULT_COPY[text])return window.RESULT_COPY[text][locale==="en"?0:1];if(window.TRANSFER_COPY[text])return window.TRANSFER_COPY[text][locale==="en"?0:1];if(window.DEPTH_COPY[text])return window.DEPTH_COPY[text][locale==="en"?0:1];if(window.FINAL_COPY[text])return window.FINAL_COPY[text][locale==="en"?0:1];return locale==="en"?window.EN[text]??text:translations.get(text)??text;}
+  function t(text){if(window.MOBILE_COPY?.[text])return window.MOBILE_COPY[text][locale==="en"?0:1];if(window.RESULT_COPY[text])return window.RESULT_COPY[text][locale==="en"?0:1];if(window.TRANSFER_COPY[text])return window.TRANSFER_COPY[text][locale==="en"?0:1];if(window.DEPTH_COPY[text])return window.DEPTH_COPY[text][locale==="en"?0:1];if(window.FINAL_COPY[text])return window.FINAL_COPY[text][locale==="en"?0:1];return locale==="en"?window.EN[text]??text:translations.get(text)??text;}
   const byId=id=>document.getElementById(id);
   function updateText(id,text){
     const element=byId(id);
@@ -26,6 +26,14 @@
   }
   const map=byId("map"), ctx=map.getContext("2d"), box=byId("box");
   const keys=new Set();
+  const touchKeys=new Map();
+  const phone=typeof matchMedia==="function"?matchMedia("(max-width: 600px), (hover: none) and (pointer: coarse) and (max-width: 1000px)"):null;
+  const isMobile=()=>Boolean(phone?.matches);
+  function inputHeld(key){
+    if(keys.has(key))return true;
+    for(const held of touchKeys.values())if(held===key)return true;
+    return false;
+  }
   let facing="front";
   const newGame=()=>({area:0,x:98,y:177,seen:new Set(),done:new Set(),slots:2,evidence:new Set(),consulted:new Map(),questDrafts:{},activityResults:new Map(),researchGap:false,followUp:null,phase:0,initial:null,route:null,action:[],ending:false});
   let game=newGame(), target=null, waypoints=[], last=0, moving=false, time=0;
@@ -36,6 +44,7 @@
     box.className=view;
     byId("summary-tools").replaceChildren();
     keys.clear();
+    touchKeys.clear();
     target=null;
     byId("speaker").textContent=t(speaker);
     const portrait=speaker==="Dr Chan"?["academic",[speaker]]:Object.entries(npc).find(([,value])=>value[0]===speaker);
@@ -506,7 +515,11 @@
     ["cv","Follow the gold marker to the application folder and interact."]
   ];
   function objective(){
-    if(tutorial>=0)return tutorialTasks[tutorial];
+    if(tutorial>=0){
+      const [id,text]=tutorialTasks[tutorial];
+      const mobileText=["mobile.tutorial.move","mobile.tutorial.phone",null,"mobile.tutorial.journal"][tutorial];
+      return [id,isMobile()&&mobileText?mobileText:text];
+    }
     if(game.ending)return ["plan","Reflect on your choices"];
     if(game.route)return [game.area===1?"desk":"centre","Complete the final draft at the Career Centre workbench"];
     if(!game.seen.has("email"))return [game.area===0?"email":"campus","Read your phone on campus"];
@@ -543,10 +556,19 @@
         ...(game.consulted.size?[button("Conversation",()=>show("Conversation",supportReceived().join("\n\n"),[button("Inventory",inventory)]))]:[]),
         button("Back to the world",close)],"Field notes and drafts");
   }
+  function controlLabels(){
+    for(const [id,label] of Object.entries({brand:"FROM LOST TO LAUNCHED / WEEK 4",title:"Career Crossroads",subtitle:"One Week to Graduation",journal:"Journal [J]",bag:"Inventory",pause:"Pause [Esc]",interact:"Interact [E]",controls:"WASD / arrows to move · E to interact · J for journal · Click a marked object to walk there"}))updateText(id,t(label));
+    if(isMobile()){
+      for(const [id,key] of Object.entries({journal:"mobile.journal",bag:"Inventory",pause:"Settings",interact:"mobile.interact",controls:"mobile.controls"}))updateText(id,t(key));
+    }
+    for(const control of document.querySelectorAll("[data-key]")){
+      control.setAttribute("aria-label",t("mobile."+control.dataset.key));
+    }
+  }
   function language(next,view){
     locale=next;
     if(document.documentElement)document.documentElement.lang=next;
-    for(const [id,label] of Object.entries({brand:"FROM LOST TO LAUNCHED / WEEK 4",title:"Career Crossroads",subtitle:"One Week to Graduation",journal:"Journal [J]",bag:"Inventory",pause:"Pause [Esc]",interact:"Interact [E]",controls:"WASD / arrows to move · E to interact · J for journal · Click a marked object to walk there"}))updateText(id,t(label));
+    controlLabels();
     render();if(view)view();
   }
   const languageButtons=view=>[button("繁體中文（香港）",()=>language("zh-HK",view),locale==="zh-HK"),button("English",()=>language("en",view),locale==="en")];
@@ -567,7 +589,7 @@
     const refresh=()=>pause(fromTitle);
     show("Paused","Two optional activities are available. Walking, reading and conversations are free. You can always finish the main story.",[
       button(fromTitle?"Back to title":"Resume",back),...languageButtons(refresh),
-      button("Hints",()=>show("Hints",t(objective()[1])+"\n\n"+t("hint.play"),[button("Settings",refresh)])),
+      button("Hints",()=>show("Hints",t(objective()[1])+"\n\n"+t(isMobile()?"mobile.hint":"hint.play"),[button("Settings",refresh)])),
       tutorial>=0?button("Skip tutorial",exitTutorial):button("Replay tutorial",beginTutorial),
       button("Restart week",()=>show("Start over?","Your current week and drafts will be cleared.",[button("Restart",replay),button("Cancel",refresh)]))
     ],"One Week to Graduation");
@@ -580,7 +602,7 @@
     if(tutorial===2&&id==="friend"){
       return show("Ming","Hey, you found me. In the story, talk to people and check documents before you settle on a route.",[button("Continue",()=>{
         tutorial=3;
-        show("Tutorial","Open the journal with J or the Journal button.",[button("Back to the world",close),button("Skip tutorial",exitTutorial)]);
+        show("Tutorial",isMobile()?"mobile.tutorial.journal":"Open the journal with J or the Journal button.",[button("Back to the world",close),button("Skip tutorial",exitTutorial)]);
       })]);
     }
     if(tutorial===4&&id==="cv")return show("Tutorial complete","Two optional activities are available. Walking, reading and conversations are free. You can always finish the main story.",[button("Start game",exitTutorial)]);
@@ -699,16 +721,16 @@
       }
     }
     fixtures.forEach(([x,y,w,h],i)=>furniture(x,y,w,h,i,game.area));
-    ctx.font='bold 12px "Microsoft JhengHei", "PingFang HK", sans-serif';ctx.textAlign="center";
+    ctx.font=(isMobile()?"700 20px ":"bold 12px ")+'"Microsoft JhengHei", "PingFang HK", sans-serif';ctx.textAlign="center";
     for(const [id,rawName,x,y,color] of objects()){
-      const name=t(rawName);
+      const name=t(isMobile()&&window.MOBILE_COPY?.["mobile.map."+id]?"mobile.map."+id:rawName);
       if(color)sprite(x,y,id);
       else if(id in directions){rect(x-18,y-19,36,35,"#294c4c");rect(x-13,y-15,26,28,"#7fa898");}
       else{rect(x-12,y-10,24,20,"#34454d");rect(x-9,y-7,18,13,"#f5d7a0");rect(x-6,y-3,12,2,"#887654");}
-      const width=ctx.measureText?ctx.measureText(name).width:name.length*7;
+      const width=ctx.measureText?ctx.measureText(name).width:name.length*(isMobile()?12:7);
       const labelX=Math.max(width/2+6,Math.min(634-width/2,x));
-      rect(labelX-width/2-5,y+18,width+10,16,"#1a3038");
-      ctx.fillStyle="#fff0d4";ctx.fillText(name,labelX,y+30);
+      rect(labelX-width/2-5,y+18,width+10,isMobile()?25:16,"#1a3038");
+      ctx.fillStyle="#fff0d4";ctx.fillText(name,labelX,y+(isMobile()?38:30));
       if(objective()[0]===id){rect(x-5,y-30,10,10,"#ffc869");ctx.fillStyle="#263237";ctx.fillText("!",x,y-21);}
       else if((game.seen.has(id)||(id==="evidence"&&(has("survey")||has("brief"))))&&id in clues){rect(x-4,y-24,8,6,"#a2d0a3");rect(x-1,y-25,4,2,"#d7e9b8");}
     }
@@ -719,15 +741,19 @@
     const nearby=nearest();
     if(nearby&&!box.open){
       const [, ,x,y]=nearby;
-      rect(x-9,y-48,18,15,"#18313b");ctx.fillStyle="#fff1ca";ctx.fillText("E",x,y-36);
+      if(isMobile()){
+        rect(x-6,y-35,12,6,"#ffc869");rect(x-3,y-29,6,4,"#ffc869");
+      }else{
+        rect(x-9,y-48,18,15,"#18313b");ctx.fillStyle="#fff1ca";ctx.fillText("E",x,y-36);
+      }
     }
-    updateText("hint",nearby?"E · "+t(nearby[1]):t("Explore the marked objects or open your journal"));
+    updateText("hint",nearby?(isMobile()?t("mobile.nearby"):"E · ")+t(nearby[1]):t(isMobile()?"mobile.hint":"Explore the marked objects or open your journal"));
   }
   function frame(now){
     const dt=Math.min((now-last)/1000,.035);last=now;time=now;moving=false;
     if(!box.open){
-      let dx=Number(keys.has("d")||keys.has("arrowright"))-Number(keys.has("a")||keys.has("arrowleft"));
-      let dy=Number(keys.has("s")||keys.has("arrowdown"))-Number(keys.has("w")||keys.has("arrowup"));
+      let dx=Number(inputHeld("d")||inputHeld("arrowright"))-Number(inputHeld("a")||inputHeld("arrowleft"));
+      let dy=Number(inputHeld("s")||inputHeld("arrowdown"))-Number(inputHeld("w")||inputHeld("arrowup"));
       if(dx||dy)target=null;
       if(target){
         if(distance(target)<37){const destination=target;target=null;interact(destination);}
@@ -754,7 +780,9 @@
   map.onclick=event=>{
     const bounds=map.getBoundingClientRect();
     const x=(event.clientX-bounds.left)*640/bounds.width,y=(event.clientY-bounds.top)*352/bounds.height;
-    target=objects().find(o=>Math.abs(o[2]-x)<38&&Math.abs(o[3]-y)<37)||null;
+    const candidates=objects().filter(o=>Math.abs(o[2]-x)<38&&y-o[3]>-37&&y-o[3]<(isMobile()?45:37));
+    if(isMobile())candidates.sort((a,b)=>Math.hypot(a[2]-x,a[3]-y)-Math.hypot(b[2]-x,b[3]-y));
+    target=candidates[0]||null;
     waypoints=target?approach(target):[];
   };
   addEventListener("keydown",event=>{
@@ -766,14 +794,22 @@
     if(!event.repeat&&key==="escape")pause();
   });
   addEventListener("keyup",event=>keys.delete(event.key.toLowerCase()));
-  addEventListener("blur",()=>keys.clear());
+  addEventListener("blur",()=>{keys.clear();touchKeys.clear();});
   for(const control of document.querySelectorAll("[data-key]")){
     const key=control.dataset.key;
-    control.onpointerdown=event=>{control.setPointerCapture(event.pointerId);keys.add(key);};
-    control.onlostpointercapture=()=>keys.delete(key);
-    control.onpointerup=()=>keys.delete(key);
+    control.onpointerdown=event=>{
+      if(box.open||event.button!==0)return;
+      event.preventDefault();
+      control.setPointerCapture?.(event.pointerId);
+      touchKeys.set(event.pointerId,key);
+    };
+    const release=event=>touchKeys.delete(event.pointerId);
+    control.onlostpointercapture=release;
+    control.onpointercancel=release;
+    control.onpointerup=release;
   }
   byId("journal").onclick=journal;byId("bag").onclick=inventory;byId("pause").onclick=()=>pause();
   byId("interact").onclick=()=>interact(nearest());
+  phone?.addEventListener?.("change",controlLabels);
   language("zh-HK",introduction);requestAnimationFrame(frame);
 })();
