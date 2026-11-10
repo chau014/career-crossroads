@@ -1,0 +1,1 @@
+window.EN = {"reflection.copy":"1. What happened when the character’s original pathway was blocked?\n\n2. How did exploration or action reveal another possible route?\n\n3. What can you apply to your own career situation?\n\nUse your Strengths Evidence Card, Hope Map and Career Quest Record in the group reflection, then update your Revised Career Action Plan."};
